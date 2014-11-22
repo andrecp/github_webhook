@@ -1,0 +1,29 @@
+{
+    "description": "This is a very nice table",
+    "design": "office",
+    "name": "table",
+    "options": {
+        "configuration": {
+            "color": [
+                "red",
+                "green",
+                "blue"
+            ],
+            "size": [
+                "big",
+                "small"
+            ]
+        },
+        "manufacturing": {
+            "material": [
+                "wood",
+                "metal",
+                "plastic"
+            ],
+            "tool": [
+                "cnc",
+                "laser"
+            ]
+        }
+    }
+}
