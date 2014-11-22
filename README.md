@@ -4,6 +4,8 @@ github_webhook
 playing around with github webhooks and Pyramid.
 
 # Develop
+Set an enviroment variable WEBHOOK_BRANCH to the branch you want to monitor. (example: export WEBHOOK_BRANCH=master)
+
 ```
 $VENV/bin/python setup.py develop
 $VENV/bin/pserve development.ini
@@ -17,4 +19,7 @@ At command line:
 
 ```
 http POST http://127.0.0.1:6547 < testing_commits/body.json
+```
+```
+http POST http://127.0.0.1:6547 < testing_commits/body_another_branch.json
 ```
