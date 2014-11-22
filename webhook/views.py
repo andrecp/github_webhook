@@ -5,14 +5,19 @@ import os
 
 @view_config(route_name='root')
 def root_view(request):
-    print os.environ['WEBHOOK_BRANCH']
-    if request.method == 'GET':
-        print 'Hello world!'
-        return Response('Hello world!')
-    elif request.method == 'POST':
-        print 'Hello post world!\n'
+    branch = os.environ['WEBHOOK_BRANCH']
+    if request.method == 'POST':
         data = request.json_body
         print 'New commit by: {0} '.format(data['commits'][0]['author']['name'])
-        print 'New commit by: {0} '.format(data['commits'][0]['author']['name'])
-        return Response('Hello post world!')
+        push_branch = data['ref'].split('/')
+        push_branch = push_branch[-1]
+        if branch == push_branch:
+            response_msg = 'Successfuly commited to {0}'.format(branch)
+            return Response(response_msg)
+        else:
+            response_msg = 'Wrong Branch!\nYou commited to {0}, we are only accepting commits to {1} branch'.format(push_branch, branch)
+            return Response(response_msg)
+    else:
+        return Response('Not a post!')
+      
 
