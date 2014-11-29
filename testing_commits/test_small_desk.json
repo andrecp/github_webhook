@@ -1,11 +1,11 @@
 {
-   "description":"This is a very nice table",
+   "description":"This is a small table",
    "design":"office",
    "name":"table",
    "options":{
       "configuration":{
          "color":[
-            "red",
+            "gray",
             "green",
             "blue"
          ],
