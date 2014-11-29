@@ -18,8 +18,12 @@ def sendData(url, data):
 
 @view_config(route_name='root', request_method='POST')
 def root_view(request):
-    branch = os.getenv('WEBHOOK_BRANCH','WEBHOOK_BRANCH ENV VARIABLE NOT SET')
-    push_to = os.getenv('PUSH_URL','PUSH_URL ENV VARIABLE NOT SET')
+    branch = os.environ.get('WEBHOOK_BRANCH')
+    if branch == None:
+        return Response('WEBHOOK_BRANCH not set')
+    push_to = os.environ.get('PUSH_URL')
+    if push_to == None:
+        return Response('PUSH_URL not set')
 
     data = request.json_body
     author = get_author(data)
