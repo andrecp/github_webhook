@@ -9,7 +9,8 @@ The goal is to have a database represented as JSON documents and managed through
 To use this first set a few enviroment variables:
 
 ```
-export WEBHOOK_BRANCH = branch to accept requests from (ex: master)
+export GIT_URL = repo to look for
+export GIT_BRANCH = branch to accept requests from (ex: master)
 export PUSH_URL = URL to push modifications to (ex: https://random.firebaseio.com)
 ```
 Then install Pyramid requirements:
