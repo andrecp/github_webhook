@@ -4,6 +4,7 @@ from pyramid.view import notfound_view_config
 import json
 import os
 import requests
+import base64
 
 from engine import get_branch, get_author, get_changes
 
@@ -11,10 +12,10 @@ def sendData(git_url, git_branch, push_url, data):
     # send add data
     for new_data in data[0]:
         data_from_github = requests.get(git_url+new_data, params=git_branch)
-        print data_from_github.json()
-        #data_from_file = open(''.join(data[0]))
-        #json_from_file = json.load(data_from_file)
-        #requests.post(push_url, json=json_from_file)
+        content_from_github = data_from_github.json()['content']
+        json_raw_data = base64.b64decode(content_from_github)
+        json_object = json.loads(json_raw_data)
+        requests.post(push_url, json=json_object)
     # send update data
     # send remove data
 
