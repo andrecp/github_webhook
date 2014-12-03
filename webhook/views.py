@@ -10,14 +10,15 @@ from engine import get_branch, get_author, get_changes
 
 def sendData(git_url, git_branch, push_url, data):
     # send add data
-    for new_data in data[0]:
-        data_from_github = requests.get(git_url+new_data, params=git_branch)
+    for add_data in data[0]:
+        data_from_github = requests.get(git_url+add_data, params=git_branch)
         content_from_github = data_from_github.json()['content']
         json_raw_data = base64.b64decode(content_from_github)
         json_object = json.loads(json_raw_data)
-        requests.post(push_url, json=json_object)
-    # send update data
+        requests.put(push_url+add_data, json=json_object)
     # send remove data
+    for delete_data in data[1]:
+        requests.delete(push_url+delete_data+'.json')
 
 @view_config(route_name='root', request_method='POST')
 def root_view(request):

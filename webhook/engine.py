@@ -16,6 +16,7 @@ def get_author(commit):
 def get_changes(commit):
     changes_path = commit['commits'][0]
     added = changes_path['added']
-    removed = changes_path['removed']
     modified = changes_path['modified']
-    return (added, removed, modified)
+    removed = changes_path['removed']
+    add = list(set(added + modified))
+    return (add, removed)
