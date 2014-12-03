@@ -17,8 +17,10 @@ def sendData(git_url, git_branch, push_url, data):
         json_object = json.loads(json_raw_data)
         requests.put(push_url+add_data, json=json_object)
     # send remove data
+    print data[1]
     for delete_data in data[1]:
-        requests.delete(push_url+delete_data+'.json')
+        print delete_data
+        requests.delete(push_url+delete_data)
 
 @view_config(route_name='root', request_method='POST')
 def root_view(request):
