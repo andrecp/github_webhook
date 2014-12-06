@@ -25,14 +25,14 @@
             "username":"andrecp"
          },
          "added":[
-            "testing_commits/test_big_desk.json",
-            "testing_commits/test_small_desk.json"
+            "test_chair.json",
+            "test_small_desk.json"
          ],
          "removed":[
-
+            "test_big_desk.json"
          ],
          "modified":[
-            "testing_commits/test_desk.json"
+            "test_big_desk.json"
          ]
       }
    ],

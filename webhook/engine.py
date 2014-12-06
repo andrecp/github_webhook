@@ -1,7 +1,11 @@
+import json
+import base64
+
 __all__ = [
     'get_branch',
     'get_author',
     'get_changes',
+    'get_github_json',
 ]
 
 def get_branch(commit):
@@ -18,5 +22,11 @@ def get_changes(commit):
     added = changes_path['added']
     modified = changes_path['modified']
     removed = changes_path['removed']
-    add = list(set(added + modified))
-    return (add, removed)
+    return (added, modified, removed)
+
+def get_github_json(data):
+    content_from_github = data.json()['content']
+    json_raw_data = base64.b64decode(content_from_github)
+    json_object = json.loads(json_raw_data)
+    return json_object
+
