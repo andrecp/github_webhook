@@ -6,7 +6,14 @@ This is a github webhook under development.
 The goal is to have a database represented as JSON documents and managed through github. The github_webhook listens to push events at a github repository and sends the modifications to a webservice hosting the database.
 
 # Using
-To use this first set a few enviroment variables:
+First set some env variables:
+
+Edit startmeup.sh and then
+```
+source startmeup.sh
+```
+
+or
 
 ```
 export GIT_URL = repo to look for
@@ -25,6 +32,13 @@ $VENV/bin/pserve development.ini
 ```
 
 # Testing
+### Unittesting
+```
+source startmeup.sh
+$VENV/nosetests -v tests
+```
+
+### Manual testing
 Using HTTPie at command line:
 
 ```
