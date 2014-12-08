@@ -35,8 +35,8 @@ class EngineUnitTests(unittest.TestCase):
         self.assertEquals('table.json',''.join(result[0]))
         self.assertFalse(result[1])
 
-    def test_add_two_tables(self):
-        """Adding two tables..."""
+    def test_add_two_tables_update_one(self):
+        """Adding two tables and updating one..."""
         dummy_data = { "commits":[\
         {\
          "added":[\
@@ -44,8 +44,25 @@ class EngineUnitTests(unittest.TestCase):
             "table2.json"\
          ],\
          "removed":[],\
-         "modified":[]}]}
+         "modified":["table3.json"]}]}
         result = engine.get_changes(dummy_data)
         self.assertIn('table.json',result[0])
         self.assertIn('table2.json',result[0])
-        self.assertFalse(result[1])
+        self.assertIn('table3.json',result[1])
+        self.assertFalse(result[2])
+
+    def test_add_two_tables_update_one_remove_one(self):
+        """Adding two tables, updating one and removing other..."""
+        dummy_data = { "commits":[\
+        {\
+         "added":[\
+            "table.json",\
+            "table2.json"\
+         ],\
+         "removed":["table3.json"],\
+         "modified":["table4.json"]}]}
+        result = engine.get_changes(dummy_data)
+        self.assertIn('table.json',result[0])
+        self.assertIn('table2.json',result[0])
+        self.assertIn('table3.json',result[2])
+        self.assertIn('table4.json',result[1])

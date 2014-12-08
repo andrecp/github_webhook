@@ -10,6 +10,8 @@ class RootView(object):
         self.request = request
         if api_service is None:
             self.api = RESTAPIService()
+        else:
+            self.api = api_service
 
     def send_data(self, git_url, git_branch, push_url, data):
         # add data
@@ -51,7 +53,7 @@ class RootView(object):
                 self.send_data(git_url, git_branch, push_to, changes)
                 response_msg = '{0}\nSuccessfuly commited to {1}'.format(author,git_branch)
             else:
-                response_msg = 'Failed to connect to Firebase\nStatus:' + str(r.status_code)
+                response_msg = 'Failed to connect to Database\nStatus:' + str(r.status_code)
         else:
             response_msg = '{0} wrong branch!\nYou commited to {1}.\nOnly accepting commits to {2} branch.'.format(author, push_branch, git_branch)
         return Response(response_msg)
