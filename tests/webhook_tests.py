@@ -47,8 +47,7 @@ class WebHookUnitTests(unittest.TestCase):
         """Commit from wrong branch should fail..."""
         from webhook.views import RootView
         json_data=open('testing_commits/body_another_branch.json')
-        mock_api = Mock(status_code=200)
-        mock_api.get = Mock()
+        mock_api = Mock()
         request = testing.DummyRequest()
         request.json_body = json.load(json_data)
         view_inst = RootView(request, api_service=mock_api)
