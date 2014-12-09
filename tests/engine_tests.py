@@ -1,6 +1,8 @@
 from pyramid import testing
 import unittest
+import json
 from webhook import engine
+from mock import Mock
 
 class EngineUnitTests(unittest.TestCase):
     """Testing..."""
@@ -21,6 +23,14 @@ class EngineUnitTests(unittest.TestCase):
         dummy_data = {  "ref":"refs/heads/dummy" }
         result = engine.get_branch(dummy_data)
         self.assertEquals('dummy',result)
+
+    #def test_github_json(self):
+    #    dummy_data = {  "content":"refs/heads/dummy" }
+    #    request = testing.DummyRequest()
+    #    request.json = Mock(return_value=json.dumps(dummy_data))
+    #    result = engine.get_github_json(request)
+    #    self.assertEquals('dummy',result)
+        
    
     def test_add_one_table(self):
         """Adding one table..."""

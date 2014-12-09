@@ -23,7 +23,8 @@ class RootView(object):
         for update_data in data[1]:
             raw_data_from_github = self.api.get(git_url+update_data, params=git_branch)
             github_json = engine.get_github_json(raw_data_from_github)
-            self.api.put(push_url+update_data, github_json)
+            headers = {'content-type':'application/json','info':'updated'}
+            self.api.put(push_url+update_data, github_json, headers=headers)
         # remove data
         for delete_data in data[2]:
             self.api.delete(push_url+delete_data)
