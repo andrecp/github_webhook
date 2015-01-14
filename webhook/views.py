@@ -44,6 +44,9 @@ class RootView(object):
     
         # get data from the github event
         data = self.request.json_body
+
+        print data
+
         author = engine.get_author(data)
         push_branch = engine.get_branch(data)
         changes = engine.get_changes(data)
