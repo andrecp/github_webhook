@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 DEFAULTS = {
-    'whitelist' : os.environ.get('WEBHOOK_WHITELIST', '.json'),
+    'whitelist' : os.environ.get('WEBHOOK_WHITELIST', 'json'),
 }
 
 def get_branch(commit):
