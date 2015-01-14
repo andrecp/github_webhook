@@ -41,6 +41,7 @@ def _whitelist(candidate_list):
     return whitelist
 
 def get_changes(commit):
+    changes_path = {}
     changes_path['added'] = []
     changes_path['modified'] = []
     changes_path['removed'] = []
