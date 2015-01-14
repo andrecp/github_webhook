@@ -33,11 +33,13 @@ def get_author(commit):
 def _whitelist(candidate_list):
     allowed = DEFAULTS['whitelist']
     whitelist = []
+    print 'RECEIVED: ' candidate_list.join('')
 
     for item in candidate_list:
         file_extension = item.split('.')[-1] 
         if file_extension == allowed:
             whitelist.append(item)
+    print 'WHITELIST: ' whitelist.join('')
     return whitelist
 
 def get_changes(commit):
