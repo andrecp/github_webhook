@@ -14,12 +14,20 @@ DEFAULTS = {
 }
 
 def get_branch(commit):
-    branch = commit['ref'].split('/')
-    branch = branch[-1]
+    branch = 'Could not decode'
+    try:
+        branch = commit['ref'].split('/')
+        branch = branch[-1]
+    except KeyError as e:
+        print e
     return branch
 
 def get_author(commit):
-    author = commit['commits'][0]['author']['name']
+    author = 'Could not decode'
+    try:
+        author = commit['commits'][0]['author']['name']
+    except KeyError as e:
+        print e
     return author
 
 def _whitelist(candidate_list):
@@ -33,7 +41,13 @@ def _whitelist(candidate_list):
     return whitelist
 
 def get_changes(commit):
-    changes_path = commit['commits'][0]
+    changes_path['added'] = []
+    changes_path['modified'] = []
+    changes_path['removed'] = []
+    try:
+        changes_path = commit['commits'][0]
+    except KeyError as e:
+        print e
     
     added = changes_path['added']
     modified = changes_path['modified']
