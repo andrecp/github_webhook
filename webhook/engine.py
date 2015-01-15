@@ -58,28 +58,88 @@ def get_base_url(commit):
         print e
     return base_url
 
+def get_dict_w_last_commits(commits_list):
+    candidate_added_dict = {}
+    candidate_modified_dict = {}
+    candidate_removed_dict = {}
+    # Reverse commits list so we can have the last changes
+    commits_history = reversed(commits_list)
+
+    last_modified_commit = 0
+
+    for commit in commits_history:
+        last_modified_commit = last_modified_commit + 1
+
+        # XXXX REFACTOR TO A FUNCTION LATER
+        candidate_to_add = _whitelist(commit['added'])
+        if candidate_to_add:
+            for item in candidate_to_add:
+                to_str_key = ''.join(item)
+                candidate_added_dict[to_str_key] = (to_str_key, last_modified_commit)
+
+        candidate_to_modify = _whitelist(commit['modified'])
+        if candidate_to_modify:
+            for item in candidate_to_modify:
+                to_str_key = ''.join(item)
+                candidate_modified_dict[to_str_key] = (to_str_key, last_modified_commit)
+
+        candidate_to_remove = _whitelist(commit['removed'])
+        if candidate_to_remove:
+            for item in candidate_to_remove:
+                to_str_key = ''.join(item)
+                candidate_removed_dict[to_str_key] = (to_str_key, last_modified_commit)
+    return (candidate_added_dict, candidate_modified_dict, candidate_removed_dict)
+
 def get_changes(commit):
-    changes_path = {}
-    changes_path['added'] = []
-    changes_path['modified'] = []
-    changes_path['removed'] = []
+    # Dummy object for non resolved webhooks
+    commits_list = {}
+    commits_list['added'] = []
+    commits_list['modified'] = []
+    commits_list['removed'] = []
     try:
-        changes_path = commit['commits'][0]
+        commits_list = commit['commits']
     except KeyError as e:
         print e
-    
-    added = changes_path['added']
-    modified = changes_path['modified']
-    removed = changes_path['removed']
-    
-    # Get only the whitelist items
-    added = _whitelist(added)
-    modified = _whitelist(modified)
-    removed = _whitelist(removed)
-    return (added, modified, removed)
+
+    #
+    added_list = []
+    modified_list = []
+    removed_list = []
+
+    # Resolve all commits history to a single dict
+    add_dict, mod_dict, rm_dict = get_dict_w_last_commits(commits_list)
+
+    # Removing items from dict if last change was a remove
+    for key in rm_dict.keys():
+        removed_timestamp = rm_dict[key][1]
+        key_deleted = False
+        if key in add_dict:
+            if removed_timestamp >= add_dict[key][1]:
+                del add_dict[key]
+            else:
+                del rm_dict[key]
+                key_deleted = True
+
+        if key in mod_dict:
+            if removed_timestamp >= mod_dict[key][1]:
+                del mod_dict[key]
+            else:
+                if not key_deleted:
+                    del rm_dict[key]
+
+    for key in add_dict.keys():
+        added_list.append(add_dict[key][0])
+    for key in mod_dict.keys():
+        modified_list.append(mod_dict[key][0])
+    for key in rm_dict.keys():
+        removed_list.append(rm_dict[key][0])
+ 
+    return (added_list, modified_list, removed_list)
 
 def get_github_json(data):
-    content_from_github = data.json()['content']
+    json_data = data.json()
+    content_from_github = json_data['content']
+    sha1_from_github = json_data['sha']
     json_raw_data = base64.b64decode(content_from_github)
     json_object = json.loads(json_raw_data)
     return json_object

@@ -86,3 +86,53 @@ class EngineUnitTests(unittest.TestCase):
         self.assertIn('table2.json',result[0])
         self.assertIn('table3.json',result[2])
         self.assertIn('table4.json',result[1])
+
+
+    def test_get_dict_w_last_commits(self):
+        """Testing commit history dict resolving..."""
+        dummy_data = [\
+        {\
+         "added":["table.json", "table4.json", "table2.json"],\
+         "removed":[],\
+         "modified":["lean.json"]},\
+         {\
+         "added":["chair.json"],\
+         "removed":[],\
+         "modified":["table.json", "table4.json", "table2.json"]},
+         {\
+         "added":["table.json"],\
+         "removed":["table4.json", "table2.json"],\
+         "modified":["luan.jsaon"]},\
+        ]
+        added, modified, removed = engine.get_dict_w_last_commits(dummy_data)
+
+        # timestamp 3, last added in newer
+        self.assertEquals(3,added['table.json'][1])
+        # timestamp 2, last modified in 2nd commit
+        self.assertEquals(2,modified['table2.json'][1])
+        self.assertEquals('table4.json',removed['table4.json'][0])
+
+    def test_get_changes_w_commits_history(self):
+        """Testing commit history resolving, order of add,modified,delete matters..."""
+        dummy_data = {"commits":[\
+        {\
+         "added":["table.json", "table4.json", "table2.json"],\
+         "removed":[],\
+         "modified":["lean.json"]},\
+         {\
+         "added":["chair.json"],\
+         "removed":["chair.json", "table.json"],\
+         "modified":["table.json", "table4.json", "table2.json"]},
+         {\
+         "added":["table.json"],\
+         "removed":["table4.json", "table2.json"],\
+         "modified":["luan.jsaon"]},\
+        ]}
+        added, modified, removed = engine.get_changes(dummy_data)
+
+        # We removed it into the second commit
+        self.assertIn("table.json",added)
+        # timestamp 2, last modified in 2nd commit
+        self.assertNotIn("chair.json",added)
+        # All other files got re-added, only chair.json left
+        self.assertIn("chair.json",removed)
