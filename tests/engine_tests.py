@@ -24,12 +24,22 @@ class EngineUnitTests(unittest.TestCase):
         result = engine.get_branch(dummy_data)
         self.assertEquals('dummy',result)
 
-    #def test_github_json(self):
-    #    dummy_data = {  "content":"refs/heads/dummy" }
-    #    request = testing.DummyRequest()
-    #    request.json = Mock(return_value=json.dumps(dummy_data))
-    #    result = engine.get_github_json(request)
-    #    self.assertEquals('dummy',result)
+    def test_whitelist(self):
+        """only .json files and files/name.ext should pass..."""
+        valid_files = ['table.json', 'lala/files/hha/lala.tst']
+        result = engine._whitelist(valid_files)
+        self.assertEquals(valid_files,result)
+
+        valid_files = ['lala/json/lala.json.table.jison', 'lala/filess/lala.tst']
+        result = engine._whitelist(valid_files)
+        for items in valid_files:
+            self.assertNotIn(items,result)
+
+    def test_get_base_url(self):
+        """Getting base URL from GIT webhook JSON..."""
+        dummy_data = {'commits':[{'url':'https://github.com/andrecp/github_webhook/commit/852d05ed0c096df331'}]}
+        result = engine.get_base_url(dummy_data)
+        self.assertEquals('https://github.com/andrecp/github_webhook/',result)
         
    
     def test_add_one_table(self):

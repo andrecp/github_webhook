@@ -7,14 +7,15 @@ __all__ = [
     'get_author',
     'get_changes',
     'get_github_json',
+    'get_commit_url',
 ]
 
 DEFAULTS = {
-    'whitelist' : os.environ.get('WEBHOOK_WHITELIST', 'json'),
+    'whitelist' : os.environ.get('WEBHOOK_WHITELIST', '.json;files'),
 }
 
 def get_branch(commit):
-    branch = 'Could not decode'
+    branch = 'Could not decode branch'
     try:
         branch = commit['ref'].split('/')
         branch = branch[-1]
@@ -23,7 +24,7 @@ def get_branch(commit):
     return branch
 
 def get_author(commit):
-    author = 'Could not decode'
+    author = 'Could not decode author'
     try:
         author = commit['commits'][0]['author']['name']
     except KeyError as e:
@@ -31,16 +32,31 @@ def get_author(commit):
     return author
 
 def _whitelist(candidate_list):
-    allowed = DEFAULTS['whitelist']
+    allowed = DEFAULTS['whitelist'].split(';')
     whitelist = []
-    print 'RECEIVED: ' + ''.join(candidate_list)
+    print 'RECEIVED: ' + ' '.join(candidate_list)
 
+    # Check if it's a JSON document
     for item in candidate_list:
-        file_extension = item.split('.')[-1] 
-        if file_extension == allowed:
+        is_json = '.' + item.split('.')[-1] 
+        if is_json in allowed:
             whitelist.append(item)
-    print 'WHITELIST: ' + ''.join(whitelist)
+        # Check if it's a files/:name.ext
+        folders = item.split('/')
+        for sub_folders in folders:
+            if sub_folders in allowed:
+                whitelist.append(item)
+    print 'WHITELIST: ' + ' '.join(whitelist)
     return whitelist
+
+def get_base_url(commit):
+    base_url ='Could not decode commit url' 
+    try:
+        # We are getting {URL}/commit/{HASH} and base url is {URL}
+        base_url = commit['commits'][0]['url'].split('commit')[0]
+    except KeyError as e:
+        print e
+    return base_url
 
 def get_changes(commit):
     changes_path = {}
