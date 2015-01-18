@@ -5,14 +5,19 @@ import os
 __all__ = [
     'get_branch',
     'get_author',
+    'get_base_url',
     'get_changes',
     'get_github_json',
-    'get_commit_url',
 ]
 
 DEFAULTS = {
     'whitelist' : os.environ.get('WEBHOOK_WHITELIST', '.json;files'),
 }
+
+"""
+This module is responsible for doing operations in JSON data received
+from a given GitHub respository.
+"""
 
 def get_branch(commit):
     branch = 'Could not decode branch'
@@ -58,7 +63,7 @@ def get_base_url(commit):
         print e
     return base_url
 
-def get_dict_w_last_commits(commits_list):
+def _get_dict_w_last_commits(commits_list):
     candidate_added_dict = {}
     candidate_modified_dict = {}
     candidate_removed_dict = {}
@@ -107,7 +112,7 @@ def get_changes(commit):
     removed_list = []
 
     # Resolve all commits history to a single dict
-    add_dict, mod_dict, rm_dict = get_dict_w_last_commits(commits_list)
+    add_dict, mod_dict, rm_dict = _get_dict_w_last_commits(commits_list)
 
     # Removing items from dict if last change was a remove
     for key in rm_dict.keys():

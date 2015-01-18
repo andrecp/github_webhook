@@ -104,7 +104,7 @@ class EngineUnitTests(unittest.TestCase):
          "removed":["table4.json", "table2.json"],\
          "modified":["luan.jsaon"]},\
         ]
-        added, modified, removed = engine.get_dict_w_last_commits(dummy_data)
+        added, modified, removed = engine._get_dict_w_last_commits(dummy_data)
 
         # timestamp 3, last added in newer
         self.assertEquals(3,added['table.json'][1])

@@ -4,11 +4,23 @@ import os
 from pyramid import testing
 from mock import Mock
 
-class FakeRequests(Mock):
-    status_code = 200
-    def __getitem__(self, dummy):
-        #dummy_data = {  "ref":"refs/heads/dummy" }
-        return '{"content":"objecccct"}'
+class WebHookFunctionalTests(unittest.TestCase):
+    """Testing..."""
+    def setUp(self):
+        testing.setUp()
+        self.config = testing.setUp()
+        from webhook import main
+        app = main.main({})
+        from webtest import TestApp
+        self.testapp = TestApp(app)
+
+    def test_root(self):
+        """Getting from root should display info msg..."""
+        res = self.testapp.get('/', status=200)
+        self.assertTrue('This is a github webhook' in res.body)
+
+    def tearDown(self):
+        testing.tearDown()
 
 class WebHookUnitTests(unittest.TestCase):
     """Testing..."""
@@ -17,7 +29,7 @@ class WebHookUnitTests(unittest.TestCase):
 
     def tearDown(self):
         testing.tearDown()
-  
+
     def test_database_request(self):
         """Check if a request is sent to the database..."""
         from webhook.views import RootView
