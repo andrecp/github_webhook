@@ -19,19 +19,25 @@ class RootView(object):
         else:
             self.api = api_service
 
-    def send_data(self, git_url, git_branch, push_url, data):
+    def send_data(self, git_url, push_url, git_info):
         """This method formats and sends data to our API."""
+        # Unpacking data
+        data        = git_info['changes']
+        git_branch  = git_info['push_branch']
+        base_url    = git_info['base_url']
+        serving_url = git_info['serving_url']
 
         # Adding information regarding where the data came from
-        headers = {'content-type':u'application/json',
-                    'REPOSITORY_URL':u'{0}'.format(),
-                    'SERVING_URL':u'{0}'.format()
+        headers = {'content-type'   : u'application/json',
+                   'REPOSITORY_URL' : base_url,
+                   'SERVING_URL'    : serving_url,
                   }
+
         # add data
         for add_data in data[0]:
             raw_data_from_github = self.api.get(git_url+add_data, params=git_branch)
             github_json = engine.get_github_json(raw_data_from_github)
-            self.api.put(push_url+add_data, github_json)
+            self.api.put(push_url+add_data, github_json, headers=headers)
         # update data
         for update_data in data[1]:
             raw_data_from_github = self.api.get(git_url+update_data, params=git_branch)
@@ -53,29 +59,35 @@ class RootView(object):
         if DEFAULTS['push_url'] == None:
             return Response(u'GITHUB_WEBHOOK_PUSH_URL not set')
 
-        # everything is ok, unpack data
+        # We have all the env variables, unpack data
         git_url    = DEFAULTS['git_url']
         git_branch = DEFAULTS['git_branch']
-        push_url    = DEFAULTS['push_url']
+        push_url   = DEFAULTS['push_url']
 
         # get data from the github event
         data = self.request.json_body
 
-        print data
+        # A dict to hold information received from github
+        git_info = {}
 
-        author = engine.get_author(data)
-        push_branch = engine.get_branch(data)
-        changes = engine.get_changes(data)
+        # Getting information from the JSON we received
+        git_info['base_url']    = engine.get_base_url(data)
+        git_info['serving_url'] = engine.get_serving_url(git_info['base_url'])
+        git_info['author']      = engine.get_author(data)
+        git_info['push_branch'] = engine.get_branch(data)
+        git_info['changes']     = engine.get_changes(data)
 
-        if git_branch == push_branch:
+        # Checking if the branch is right and checking if the API answers
+        if git_branch == git_info['push_branch']:
             r = self.api.get(push_url)
             if r.status_code == 200:
-                self.send_data(git_url, git_branch, push_url, changes)
-                response_msg = u'{0}\nSuccessfuly commited to {1}'.format(author,git_branch)
+                # Everything is OK, sending data to API
+                self.send_data(git_url, push_url, git_info)
+                response_msg = u'{0}\nSuccessfuly commited to {1}'.format(git_info['author'],git_branch)
             else:
-                response_msg = u'Failed to connect to Database\nStatus:' + str(r.status_code)
+                response_msg = u'Failed to connect to API\nStatus:' + str(r.status_code)
         else:
-            response_msg = u'{0} wrong branch!\nYou commited to {1}.\nOnly accepting commits to {2} branch.'.format(author, push_branch, git_branch)
+            response_msg = u'{0} wrong branch!\nYou commited to {1}.\nOnly accepting commits to {2} branch.'.format(git_info['author'], git_info['push_branch'], git_branch)
         return Response(response_msg)
 
 @notfound_view_config(request_method='GET')

@@ -6,12 +6,13 @@ __all__ = [
     'get_branch',
     'get_author',
     'get_base_url',
+    'get_serving_url',
     'get_changes',
     'get_github_json',
 ]
 
 DEFAULTS = {
-    'whitelist' : os.environ.get('WEBHOOK_WHITELIST', '.json;files'),
+    'whitelist' : os.environ.get('GITHUB_WEBHOOK_WEBHOOK_WHITELIST', '.json;files'),
 }
 
 """
@@ -20,7 +21,7 @@ from a given GitHub respository.
 """
 
 def get_branch(commit):
-    branch = 'Could not decode branch'
+    branch = u'Could not decode branch'
     try:
         branch = commit['ref'].split('/')
         branch = branch[-1]
@@ -29,7 +30,7 @@ def get_branch(commit):
     return branch
 
 def get_author(commit):
-    author = 'Could not decode author'
+    author =  u'Could not decode author'
     try:
         author = commit['commits'][0]['author']['name']
     except KeyError as e:
@@ -55,18 +56,33 @@ def _whitelist(candidate_list):
     return whitelist
 
 def get_base_url(commit):
-    base_url ='Could not decode commit url' 
+    # We are getting {URL}/commit/{HASH} and base url is {URL}
+    base_url = u'Could not decode base url' 
+    print commit['commits'][0]['url']
     try:
-        # We are getting {URL}/commit/{HASH} and base url is {URL}
         base_url = commit['commits'][0]['url'].split('commit')[0]
     except KeyError as e:
         print e
     return base_url
 
+def get_serving_url(base_url):
+    # Mounting URL with RAW content to download from
+    # e.g:https://raw.githubusercontent.com/opendesk/collection/master/
+    prefix = u'https://raw.githubusercontent.com/'
+    branch = u'{0}'.format(os.environ.get('GITHUB_WEBHOOK_GIT_BRANCH'))
+
+    # opendesk/collection/
+    len_to_jump = len('https://github.com/')
+    relevant_data = base_url[len_to_jump:]
+    # mounting serving URL 
+    serving_url = prefix + relevant_data + branch + '/'
+    return serving_url
+
 def _get_dict_w_last_commits(commits_list):
     candidate_added_dict = {}
     candidate_modified_dict = {}
     candidate_removed_dict = {}
+
     # Reverse commits list so we can have the last changes
     commits_history = reversed(commits_list)
 

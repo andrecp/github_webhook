@@ -16,9 +16,9 @@ source startmeup.sh
 or
 
 ```
-export GIT_URL = repo to look for
-export GIT_BRANCH = branch to accept requests from (ex: master)
-export PUSH_URL = URL to push modifications to (ex: https://random.firebaseio.com)
+export GITHUB_WEBHOOK_GIT_URL = repo to look for
+export GITHUB_WEBHOOK_GIT_BRANCH = branch to accept requests from (ex: master)
+export GITHUB_WEBHOOK_GIT_PUSH_URL = URL to push modifications to (ex: https://random.firebaseio.com)
 ```
 Then install Pyramid requirements:
 
