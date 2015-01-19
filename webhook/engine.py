@@ -181,5 +181,8 @@ def validate_signature(data, signature_received):
 
     # HMAC requires its key to be bytes, but data is strings.
     mac = hmac.new(DEFAULTS['git_secret_token'], msg=data, digestmod=hashlib.sha1)
-
-    return mac.hexdigest() == b'{0}'.format(signature)
+    # Should exist in Python 2.7.7
+    if hasattr(mac, 'compare_digest'):
+        return hmac.compare_digest(mac.hexdigest(), signature)
+    else:
+        return mac.hexdigest() == b'{0}'.format(signature)
