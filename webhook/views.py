@@ -112,8 +112,6 @@ class RootView(object):
 
 @notfound_view_config(request_method='GET')
 def not_found_view(self):
-    return_msg = Response(u'This is a github webhook, see: <a href="https://github.com/opendesk/github-webhook">Visit Our Github</a>')
-    return_msg.content_type = u'text/html'
-    return return_msg
+    return Response(u'This is a github webhook, see: <a href="https://github.com/opendesk/github-webhook">Visit Our Github</a>')
            
     
