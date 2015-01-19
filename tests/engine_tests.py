@@ -1,8 +1,10 @@
-from pyramid import testing
-import unittest
 import json
-from webhook import engine
+import os
+import unittest
+
 from mock import Mock
+from pyramid import testing
+from webhook import engine
 
 class EngineUnitTests(unittest.TestCase):
     """Testing..."""
@@ -138,9 +140,14 @@ class EngineUnitTests(unittest.TestCase):
         self.assertIn("chair.json",removed)
 
     def test_validated_signature(self):
-        """Testing the algorithm for validating a signature key from github"""
+        """Testing the algorithm for validating a signature key from github..."""
         json_data=open(u'testing_commits/add_from_master_w_security.json', 'rb')
         data = json_data.read(6573)
 
         return_value = engine.validate_signature(data, u'sha1=28b51de0d6de6d8c19a2ff76882578f7177be5c8')
         self.assertTrue(return_value)
+
+    def test_get_bearer_token(self):
+        """Should return the bearer token for the target api..."""
+        return_value = engine.get_bearer_token(os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'))
+        self.assertEquals(return_value, os.environ.get(b'GITHUB_WEBHOOK_opendesk_collection__SECRET_TOKEN'))

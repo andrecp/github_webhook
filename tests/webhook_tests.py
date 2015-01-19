@@ -39,7 +39,7 @@ class WebHookUnitTests(unittest.TestCase):
         request.json_body = json.load(json_data)
         view_inst = RootView(request, api_service=mock_api)
         result = view_inst.default_view()
-        mock_api.get.assert_called_with(os.environ.get('GITHUB_WEBHOOK_GIT_PUSH_URL'))
+        mock_api.get.assert_called_with(os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'))
 
     def test_wrong_branch(self):
         """Commit from wrong branch should fail..."""

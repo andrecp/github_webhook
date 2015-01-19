@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 
 __all__ = [
     'get_branch',
@@ -16,12 +17,12 @@ __all__ = [
 
 DEFAULTS = {
     'whitelist'        : os.environ.get('GITHUB_WEBHOOK_WEBHOOK_WHITELIST', '.json;files'),
-    'git_secret_token' : os.environ.get(b'GITHUB_WEBHOOK_SECRET_TOKEN', None),
+    'git_secret_token' : os.environ.get(b'GITHUB_WEBHOOK_opendesk_collection__SECRET_TOKEN', None),
 }
 
 """
-This module is responsible for doing operations in JSON data received
-from a given GitHub respository.
+This module has utilities regarding operations in JSON data received
+from a given GitHub respository and auxiliary tools.
 """
 
 def get_branch(commit):
@@ -186,3 +187,9 @@ def validate_signature(data, signature_received):
         return hmac.compare_digest(mac.hexdigest(), signature)
     else:
         return mac.hexdigest() == b'{0}'.format(signature)
+
+def get_bearer_token(api):
+    api_env = os.environ.keys()[os.environ.values().index(api)]
+    api_token = api_env.split('__')[0]
+    return os.environ.get('{0}__SECRET_TOKEN'.format(api_token))
+

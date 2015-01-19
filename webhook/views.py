@@ -8,7 +8,7 @@ from restapi import RESTAPIService
 DEFAULTS = {
     'git_url'         : os.environ.get('GITHUB_WEBHOOK_GIT_URL'),
     'git_branch'      : os.environ.get('GITHUB_WEBHOOK_GIT_BRANCH'),
-    'push_url'        : os.environ.get('GITHUB_WEBHOOK_GIT_PUSH_URL'),
+    'push_url'        : os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'),
     'use_github_auth' : os.environ.get('GITHUB_WEBHOOK_GIT_USE_AUTH'),
     'env_true_values' : ['1', 'True', 'true'],
 }
@@ -29,9 +29,13 @@ class RootView(object):
         base_url    = git_info['base_url']
         serving_url = git_info['serving_url']
 
+        # Getting a bearer token for our API
+        bearer_token = engine.get_bearer_token(push_url)
+
         # Adding information regarding where the data came from
         headers = {'content-type'   : u'application/json',
                    'repository_url' : base_url,
+                   'authorization'  : bearer_token,
                   }
         # add data
         for add_data in data[0]:
