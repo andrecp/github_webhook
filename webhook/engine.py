@@ -25,17 +25,19 @@ def get_branch(commit):
     try:
         branch = commit['ref'].split('/')
         branch = branch[-1]
-    except KeyError as e:
+    except KeyError, e:
         print e
-    return branch
+    else:
+        return branch
 
 def get_author(commit):
     author =  u'Could not decode author'
     try:
         author = commit['commits'][0]['author']['name']
-    except KeyError as e:
+    except KeyError, e:
         print e
-    return author
+    else:
+        return author
 
 def _whitelist(candidate_list):
     allowed = DEFAULTS['whitelist'].split(';')
@@ -58,12 +60,12 @@ def _whitelist(candidate_list):
 def get_base_url(commit):
     # We are getting {URL}/commit/{HASH} and base url is {URL}
     base_url = u'Could not decode base url' 
-    print commit['commits'][0]['url']
     try:
         base_url = commit['commits'][0]['url'].split('commit')[0]
-    except KeyError as e:
+    except KeyError, e:
         print e
-    return base_url
+    else:
+        return base_url
 
 def get_serving_url(base_url):
     # Mounting URL with RAW content to download from
@@ -119,7 +121,7 @@ def get_changes(commit):
     commits_list['removed'] = []
     try:
         commits_list = commit['commits']
-    except KeyError as e:
+    except KeyError, e:
         print e
 
     #
@@ -159,9 +161,12 @@ def get_changes(commit):
 
 def get_github_json(data):
     json_data = data.json()
-    content_from_github = json_data['content']
-    sha1_from_github = json_data['sha']
-    json_raw_data = base64.b64decode(content_from_github)
-    json_object = json.loads(json_raw_data)
-    return json_object
+    try:
+        content_from_github = json_data['content']
+    except KeyError, e:
+        print e
+    else:
+        json_raw_data = base64.b64decode(content_from_github)
+        json_object = json.loads(json_raw_data)
+        return json_object
 
