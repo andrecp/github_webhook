@@ -136,3 +136,11 @@ class EngineUnitTests(unittest.TestCase):
         self.assertNotIn("chair.json",added)
         # All other files got re-added, only chair.json left
         self.assertIn("chair.json",removed)
+
+    def test_validated_signature(self):
+        """Testing the algorithm for validating a signature key from github"""
+        json_data=open(u'testing_commits/add_from_master_w_security.json', 'rb')
+        data = json_data.read(6573)
+
+        return_value = engine.validate_signature(data, u'sha1=28b51de0d6de6d8c19a2ff76882578f7177be5c8')
+        self.assertTrue(return_value)

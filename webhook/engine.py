@@ -1,4 +1,6 @@
 import base64
+import hashlib
+import hmac
 import json
 import os
 
@@ -9,10 +11,12 @@ __all__ = [
     'get_serving_url',
     'get_changes',
     'get_github_json',
+    'validate_signature',
 ]
 
 DEFAULTS = {
-    'whitelist' : os.environ.get('GITHUB_WEBHOOK_WEBHOOK_WHITELIST', '.json;files'),
+    'whitelist'        : os.environ.get('GITHUB_WEBHOOK_WEBHOOK_WHITELIST', '.json;files'),
+    'git_secret_token' : os.environ.get(b'GITHUB_WEBHOOK_SECRET_TOKEN', None),
 }
 
 """
@@ -170,3 +174,12 @@ def get_github_json(data):
         json_object = json.loads(json_raw_data)
         return json_object
 
+def validate_signature(data, signature_received):
+    sha_name, signature = signature_received.split('=')
+    if sha_name != 'sha1':
+        return False
+
+    # HMAC requires its key to be bytes, but data is strings.
+    mac = hmac.new(DEFAULTS['git_secret_token'], msg=data, digestmod=hashlib.sha1)
+
+    return mac.hexdigest() == b'{0}'.format(signature)
