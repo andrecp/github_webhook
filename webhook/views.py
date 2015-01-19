@@ -29,20 +29,20 @@ class RootView(object):
 
         # Adding information regarding where the data came from
         headers = {'content-type'   : u'application/json',
-                   'REPOSITORY_URL' : base_url,
-                   'SERVING_URL'    : serving_url,
+                   'repository_url' : base_url,
                   }
-
         # add data
         for add_data in data[0]:
+            headers['serving_url'] = serving_url + add_data
             raw_data_from_github = self.api.get(git_url+add_data, params=git_branch)
             github_json = engine.get_github_json(raw_data_from_github)
             self.api.put(push_url+add_data, github_json, headers=headers)
         # update data
         for update_data in data[1]:
+            headers['info'] = u'updated'
+            headers['serving_url'] = serving_url + update_data
             raw_data_from_github = self.api.get(git_url+update_data, params=git_branch)
             github_json = engine.get_github_json(raw_data_from_github)
-            headers['info'] = u'updated'
             self.api.put(push_url+update_data, github_json, headers=headers)
         # remove data
         for delete_data in data[2]:
