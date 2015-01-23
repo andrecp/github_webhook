@@ -2,10 +2,14 @@ import engine
 import gevent
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.view import notfound_view_config
 from restapi import RESTAPIService
+
 
 DEFAULTS = {
     'git_url'         : os.environ.get('GITHUB_WEBHOOK_GIT_URL'),
@@ -23,8 +27,8 @@ class RootView(object):
         else:
             self.api = api_service
 
-    def _push_to_api(self, push_url, url_list, headers):
-        """"""
+    def _push_to_api(self, push_url, url_list, headers, requests_status):
+        """Sending concurrently the URLs received for the API"""
 
         # Unpack data
         git_url = DEFAULTS['git_url']
@@ -33,6 +37,13 @@ class RootView(object):
         # Get content from github concurrently
         requests =  self.api.get(git_url, urls=url_list, params=git_branch)
 
+        # Looking for requests_status in requests
+        for r in requests:
+            if (r.status_code - 300) > 0:
+                logger.warn(('GET Github API failed for', r.url))
+                requests_status.update({'status' : u'error'})
+            requests_status.update({r.url : r.status_code})
+
         # Decode contents concurrently with Gevent
         jobs = [gevent.spawn(engine.get_github_json, r) for r in requests]
         gevent.joinall(jobs, timeout=2)
@@ -40,10 +51,19 @@ class RootView(object):
         json_list = [job.value for job in jobs]
         
         # Put to API concurrently 
-        self.api.put(push_url, url_list, json_list, headers=headers)
+        requests = self.api.put(push_url, url_list, json_list, headers=headers)
+
+        for r in requests:
+            if (r.status_code - 300) > 0:
+                logger.warn(('PUT to API failed for', r.url))
+                requests_status.update({'status' : u'error'})
+            requests_status.update({r.url : r.status_code})
 
     def send_data(self, push_url, git_info):
         """This method formats and sends data to our API."""
+
+        # Requests status dict
+        requests_status = {'status' : u'success'}
 
         # Unpacking data
         data        = git_info['changes']
@@ -59,31 +79,37 @@ class RootView(object):
                    'authorization'  : bearer_token,
                    'serving_url'    : serving_url,
                   }
+                  
         # Add Data
         if data[0]:
             add_urls = engine.create_async_lists_by_structure(data[0])
-            self._push_to_api(push_url, add_urls, headers)
+            self._push_to_api(push_url, add_urls, headers, requests_status)
         # Update data
         if data[1]:
             update_urls = engine.create_async_lists_by_structure(data[1])
             headers['info'] = u'updated'
-            self._push_to_api(push_url, update_urls, headers)
+            self._push_to_api(push_url, update_urls, headers, requests_status)
         # Delete data
         if data[2]:
             for delete_data in data[2]:
                 self.api.delete(push_url+delete_data)
 
-    @view_config(route_name='root', request_method='POST')
+        return requests_status
+
+    @view_config(route_name='root', request_method='POST', renderer='json')
     def default_view(self):
         """Main view, receives webhooks from github and sends to configured API."""
 
         # check for ENV variables
         if DEFAULTS['git_url'] == None:
-            return Response(u'GITHUB_WEBHOOK_GIT_URL not set', status=400)
+            self.request.response.status = '400'
+            return {u'error' : u'GITHUB_WEBHOOK_GIT_URL not set'}
         if DEFAULTS['git_branch'] == None:
-            return Response(u'GITHUB_WEBHOOK_GIT_BRANCH not set', status=400)
+            self.request.response.status = '400'
+            return {u'error' : u'GITHUB_WEBHOOK_GIT_BRANCH not set'}
         if DEFAULTS['push_url'] == None:
-            return Response(u'GITHUB_WEBHOOK_PUSH_URL not set', status=400)
+            self.request.response.status = '400'
+            return {u'error' : u'GITHUB_WEBHOOK_PUSH_URL not set'}
 
         # We have all the env variables, unpack data
         git_branch      = DEFAULTS['git_branch']
@@ -99,12 +125,13 @@ class RootView(object):
             try:
                 secret_received = self.request.headers['x-hub-signature']
             except KeyError, e:
-                print e
-                return Response(u'Invalid webhook secret key', status=401)
+                self.request.response.status = '401'
+                logger.error((e, 'Invalid webhook secret key'))
+                return {u'error' : u'Invalid webhook secret key'}
             else:
                 if engine.validate_signature(self.request.body, secret_received) is False:
-                    return Response(u'Invalid webhook secret key', status=401)
-
+                    self.request.response.status = '401'
+                    return {u'error' : u'Invalid webhook secret key'}
 
         # A dict to hold information received from github
         git_info = {}
@@ -117,16 +144,16 @@ class RootView(object):
 
         # Checking if the branch is right and checking if the API answers
         if git_branch == engine.get_branch(data):
-            r = self.api.get(push_url)
-            if r.status_code == 200:
-                # Everything is OK, sending data to API
-                self.send_data(push_url, git_info)
-                return Response(u'{0}\nSuccessfuly commited to {1}'.format(git_info['author'],git_branch))
-            else:
-                return Response(u'Failed to connect to API\nStatus:' + str(r.status_code), status=504)
+            # Everything is OK, trying to sending data to API
+            status = self.send_data(push_url, git_info)
+            # If one of the requests fails we return a 400
+            if status['status'] == u'error':
+                self.request.response.status = '400'
+            return status
         else:
             response_msg = u'{0} wrong branch!\nOnly accepting commits to {1} branch.'.format(git_info['author'], git_branch)
-            return Response(response_msg, status=403)
+            self.request.response.status = '403'
+            return {u'error' : response_msg}
 
 @notfound_view_config(request_method='GET')
 def not_found_view(self):

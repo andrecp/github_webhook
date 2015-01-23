@@ -5,6 +5,9 @@ import json
 import os
 import re
 
+import logging
+logger = logging.getLogger(__name__)
+
 __all__ = [
     'get_branch',
     'get_author',
@@ -32,7 +35,7 @@ def get_branch(commit):
         branch = commit['ref'].split('/')
         branch = branch[-1]
     except KeyError, e:
-        print e
+        logger.error((e, branch))
     else:
         return branch
 
@@ -41,7 +44,7 @@ def get_author(commit):
     try:
         author = commit['commits'][0]['author']['name']
     except KeyError, e:
-        print e
+        logger.error((e, author))
     else:
         return author
 
@@ -71,7 +74,7 @@ def get_base_url(commit):
     try:
         base_url = commit['commits'][0]['url'].split('commit')[0]
     except KeyError, e:
-        print e
+        logger.error((e, base_url))
     else:
         return base_url
 
@@ -130,7 +133,7 @@ def get_changes(commit):
     try:
         commits_list = commit['commits']
     except KeyError, e:
-        print e
+        logger.error((e, 'no commits in github JSON'))
 
     #
     added_list = []
@@ -172,15 +175,17 @@ def get_github_json(data):
     # If its bigger than 1MB we will post an empty dict
     if json_data['size'] > 1000000:
         return json.loads('{}')
-
     try:
         content_from_github = json_data['content']
     except KeyError, e:
-        print e
+        logger.error((e, json_data))
     else:
         json_raw_data = base64.b64decode(content_from_github)
-        json_object = json.loads(json_raw_data)
+
         # Adding source and base fields
+        # json_raw_data['source'] = 
+        # json_raw_data['base'] = 
+        json_object = json.loads(json_raw_data)
         return json_object
 
 def validate_signature(data, signature_received):
