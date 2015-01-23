@@ -51,8 +51,12 @@ class RootView(object):
         json_data.update({'path'   : url, 
                          'source' : headers['source'],
                          'base'   : headers['base']})
+
+        # Removing .../path/{file.json} when posting
+        patched_url = '/'.join(url.split('/')[:-1])
+
         # Put to API 
-        request = self.api.put(push_url + ''.join(url), json_data, headers=headers)
+        request = self.api.put(push_url + '/' +''.join(patched_url), json_data, headers=headers)
 
         # Looking for status in request
         if (request.status_code - 300) > 0:
