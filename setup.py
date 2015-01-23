@@ -4,7 +4,9 @@ requires = [
     'pyramid',
     'pyramid_chameleon',
     'pyramid_tm',
-    'waitress',
+    'gunicorn',
+    'gevent',
+    'grequests',
 ]
 
 setup(name='webhook',

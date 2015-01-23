@@ -16,7 +16,8 @@ __all__ = [
 ]
 
 DEFAULTS = {
-    'whitelist'        : os.environ.get('GITHUB_WEBHOOK_WEBHOOK_WHITELIST', '.json;files'),
+    'whitelist'        : os.environ.get('GITHUB_WEBHOOK_WHITELIST', 'product.json;fileset.json'),
+    'blacklist'        : os.environ.get('GITHUB_WEBHOOK_BLACKLIST', '_'),
     'git_secret_token' : os.environ.get(b'GITHUB_WEBHOOK_opendesk_collection__SECRET_TOKEN', None),
 }
 
@@ -45,22 +46,24 @@ def get_author(commit):
         return author
 
 def _whitelist(candidate_list):
-    allowed = DEFAULTS['whitelist'].split(';')
-    whitelist = []
+    allowed     = DEFAULTS['whitelist'].split(';')
+    not_allowed = DEFAULTS['blacklist'].split(';')
+    json_list = []
     print 'RECEIVED: ' + ' '.join(candidate_list)
 
-    # Check if it's a JSON document
+    # Check if it's whitelisted
     for item in candidate_list:
-        is_json = '.' + item.split('.')[-1] 
-        if is_json in allowed:
-            whitelist.append(item)
-        # Check if it's a files/:name.ext
-        folders = item.split('/')
-        for sub_folders in folders:
-            if sub_folders in allowed:
-                whitelist.append(item)
-    print 'WHITELIST: ' + ' '.join(whitelist)
-    return whitelist
+        item_path = item.split('/')
+        is_whitelisted = item_path[-1] in allowed
+        is_blacklisted = True in [sub_path[0] in not_allowed
+                             for sub_path in item_path]
+        if is_whitelisted and not is_blacklisted:
+            json_list.append(item)
+        elif not is_blacklisted:
+            json_list.append(item)
+
+    print 'WHITELIST: ' + ' '.join(json_list)
+    return json_list
 
 def get_base_url(commit):
     # We are getting {URL}/commit/{HASH} and base url is {URL}
@@ -161,11 +164,15 @@ def get_changes(commit):
         modified_list.append(mod_dict[key][0])
     for key in rm_dict.keys():
         removed_list.append(rm_dict[key][0])
- 
+
     return (added_list, modified_list, removed_list)
 
 def get_github_json(data):
     json_data = data.json()
+    # If its bigger than 1MB we will post an empty dict
+    if json_data['size'] > 1000000:
+        return json.loads('{}')
+
     try:
         content_from_github = json_data['content']
     except KeyError, e:
@@ -173,6 +180,7 @@ def get_github_json(data):
     else:
         json_raw_data = base64.b64decode(content_from_github)
         json_object = json.loads(json_raw_data)
+        # Adding source and base fields
         return json_object
 
 def validate_signature(data, signature_received):
@@ -193,3 +201,23 @@ def get_bearer_token(api):
     api_token = api_env.split('__')[0]
     return os.environ.get('{0}__SECRET_TOKEN'.format(api_token))
 
+def create_async_lists_by_structure(list_of_requests):
+    """    
+    Create lists of data to be pushed to an API by order of resources
+    """
+    # Create a dict entry for each depth that can be requested concurrently
+    unique_dict = {}
+    for item in list_of_requests:
+        depth = item.count('/')
+        if depth not in unique_dict:
+            unique_dict[depth] = [item]
+        else:
+            unique_dict[depth].append(item)
+    # Create a list for each depth
+    lists = [[]]*len(unique_dict.keys())
+    # Order the keys to do begin by the lower depths
+    sorted_keys = sorted(unique_dict, key=unique_dict.get)
+    # Populate the lists
+    for i in range(len(sorted_keys)):
+        lists[i] = unique_dict[sorted_keys[i]]
+    return lists

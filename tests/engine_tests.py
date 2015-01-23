@@ -32,7 +32,7 @@ class EngineUnitTests(unittest.TestCase):
         result = engine._whitelist(valid_files)
         self.assertEquals(valid_files,result)
 
-        valid_files = ['lala/json/lala.json.table.jison', 'lala/filess/lala.tst']
+        valid_files = ['lala/json/_lala.json.table.json', 'lala/filess/_product.json']
         result = engine._whitelist(valid_files)
         for items in valid_files:
             self.assertNotIn(items,result)
@@ -151,3 +151,41 @@ class EngineUnitTests(unittest.TestCase):
         """Should return the bearer token for the target api..."""
         return_value = engine.get_bearer_token(os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'))
         self.assertEquals(return_value, os.environ.get(b'GITHUB_WEBHOOK_opendesk_collection__SECRET_TOKEN'))
+
+    def test_create_async_lists_by_structure(self):
+        """Should return a list with the requests created and ordered...
+        
+
+        '.../lean/desk/design.json'
+        '.../lean/desk/standard/product.json'
+        '.../lean/desk/standard/wisa/fileset.json'
+        '.../lean/desk/standard/ply/fileset.json'
+        '.../lean/desk/wayra/product.json'
+        '.../lean/desk/wayra/ply/fileset.json'
+
+        -> PUT {design.json} .../lean/desk
+        -> wait ...
+           -> PUT {product.json} .../lean/desk/standard
+           -> PUT {product.json} .../lean/desk/wayra
+           -> wait ...
+              -> PUT {fileset.json} .../lean/desk/standard/wisa
+              -> PUT {fileset.json} .../lean/desk/standard/ply
+              -> PUT {fileset.json} .../lean/desk/wayra/ply
+        """
+        requests = ['ranges/lean/desk/design.json',
+                    'ranges/lean/desk/standard/product.json',
+                    'ranges/lean/desk/standard/wisa/fileset.json',
+                    'ranges/lean/desk/standard/ply/fileset.json',
+                    'ranges/lean/desk/wayra/product.json',
+                    'ranges/lean/desk/wayra/ply/fileset.json']
+        expected_lists =[
+                        ['ranges/lean/desk/design.json'],
+                        ['ranges/lean/desk/standard/product.json',
+                         'ranges/lean/desk/wayra/product.json'],
+                        ['ranges/lean/desk/standard/wisa/fileset.json',
+                         'ranges/lean/desk/standard/ply/fileset.json',
+                         'ranges/lean/desk/wayra/ply/fileset.json']
+                        ]
+
+        requests = engine.create_async_lists_by_structure(requests)
+        self.assertEquals(requests, expected_lists)

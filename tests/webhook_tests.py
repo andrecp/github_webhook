@@ -41,6 +41,17 @@ class WebHookUnitTests(unittest.TestCase):
         result = view_inst.default_view()
         mock_api.get.assert_called_with(os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'))
 
+    def test_add_two_tables_json(self):
+        """Check if the two_tables.json works well ..."""
+        from webhook.views import RootView
+        json_data=open('testing_commits/add_two_desks_one_updated.json')
+        mock_api = Mock()
+        request = testing.DummyRequest()
+        request.json_body = json.load(json_data)
+        view_inst = RootView(request, api_service=mock_api)
+        result = view_inst.default_view()
+        mock_api.get.assert_called_with(os.environ.get('GITHUB_WEBHOOK_opendesk_collection__API_URL'))
+
     def test_wrong_branch(self):
         """Commit from wrong branch should fail..."""
         from webhook.views import RootView
