@@ -173,8 +173,13 @@ def get_changes(commit):
 def get_github_json(data):
     json_data = data.json()
     # If its bigger than 1MB we will post an empty dict
-    if json_data['size'] > 1000000:
-        return json.loads('{}')
+    # try:
+    #     size = json_data['size']
+    # except KeyError, e:
+    #     logger.error((e, size))
+    # if size > 1000000:
+    #     return json.loads('{}')
+    logger.warn(json_data)
     try:
         content_from_github = json_data['content']
     except KeyError, e:
