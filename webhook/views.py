@@ -83,7 +83,7 @@ class RootView(object):
         # Adding information regarding where the data came from
         headers = {'content-type'   : u'application/json',
                    'source'         : source_url,
-                   'authorization'  : bearer_token,
+                   'authorization'  : u'Bearer {0}'.format(bearer_token),
                    'base'           : serving_url,
                   }
 
