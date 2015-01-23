@@ -1,5 +1,6 @@
 pyramid
 pyramid_chameleon
 pyramid_tm
-waitress
-requests
+gunicorn
+gevent
+grequests
