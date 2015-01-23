@@ -181,10 +181,6 @@ def get_github_json(data):
         logger.error((e, json_data))
     else:
         json_raw_data = base64.b64decode(content_from_github)
-
-        # Adding source and base fields
-        # json_raw_data['source'] = 
-        # json_raw_data['base'] = 
         json_object = json.loads(json_raw_data)
         return json_object
 
