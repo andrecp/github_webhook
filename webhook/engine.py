@@ -63,6 +63,8 @@ def _whitelist(candidate_list):
         if is_whitelisted and not is_blacklisted:
             json_list.append(item)
         elif not is_blacklisted:
+        # Items that are not blacklisted are regular files
+        # Can have a different behaviour in the future, just appending for now
             json_list.append(item)
 
     print 'WHITELIST: ' + ' '.join(json_list)
@@ -172,18 +174,24 @@ def get_changes(commit):
 
 def get_github_json(data):
     json_data = data.json()
+    size = 0
+
     # If its bigger than 1MB we will post an empty dict
-    # try:
-    #     size = json_data['size']
-    # except KeyError, e:
-    #     logger.error((e, size))
-    # if size > 1000000:
-    #     return json.loads('{}')
-    logger.warn(json_data)
+    try:
+        size = json_data['size']
+    except KeyError, e:
+        logger.error((e, size))
+        logger.warn(json_data)
+    else:
+        if size > 1000000:
+            return json.loads('{}')
+
+    # Smaller than 1MB, retrieving content 
     try:
         content_from_github = json_data['content']
     except KeyError, e:
         logger.error((e, json_data))
+        logger.warn(json_data)
     else:
         json_raw_data = base64.b64decode(content_from_github)
         json_object = json.loads(json_raw_data)
@@ -223,6 +231,8 @@ def create_async_lists_by_structure(list_of_requests):
     lists = [[]]*len(unique_dict.keys())
     # Order the keys to do begin by the lower depths
     sorted_keys = sorted(unique_dict, key=unique_dict.get)
+    # now reverse it
+    sorted_keys.reverse()
     # Populate the lists
     for i in range(len(sorted_keys)):
         lists[i] = unique_dict[sorted_keys[i]]
