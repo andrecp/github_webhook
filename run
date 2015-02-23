@@ -1,3 +1,2 @@
 #!/bin/bash
-python setup.py develop
 gunicorn --paste development.ini --log-config development.ini -b :${PORT} webhook/main.py
