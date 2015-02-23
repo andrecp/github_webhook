@@ -71,7 +71,7 @@ def _whitelist(candidate_list):
                              for sub_path in item_path]
         print 'is_blacklisted'
         print is_blacklisted
-        if is_whitelisted and not is_blacklisted:
+        if is_whitelisted:
             json_list.append(item)
         #elif not is_blacklisted:
         # Items that are not blacklisted are regular files
