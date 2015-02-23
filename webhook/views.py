@@ -100,7 +100,7 @@ class RootView(object):
         # Delete data
         if data[2]:
             for delete_data in data[2]:
-                self.api.delete(push_url+delete_data)
+                self.api.delete(push_url+'/'+delete_data)
 
         return list_of_status
 

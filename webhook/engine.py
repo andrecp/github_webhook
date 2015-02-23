@@ -231,8 +231,6 @@ def create_async_lists_by_structure(list_of_requests):
     lists = [[]]*len(unique_dict.keys())
     # Order the keys to do begin by the lower depths
     sorted_keys = sorted(unique_dict, key=unique_dict.get)
-    # now reverse it
-    sorted_keys.reverse()
     # Populate the lists
     for i in range(len(sorted_keys)):
         lists[i] = unique_dict[sorted_keys[i]]
