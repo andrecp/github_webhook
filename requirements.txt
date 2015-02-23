@@ -4,3 +4,4 @@ pyramid_tm
 gunicorn
 gevent
 grequests
+-e .
