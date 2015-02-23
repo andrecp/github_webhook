@@ -60,19 +60,14 @@ def _whitelist(candidate_list):
     # Check if it's whitelisted
     for item in candidate_list:
         item_path = item.split('/')
-        print 'debugging... Item Path'
-        print item_path
-        print 'debugging... Last /'
-        print item_path[-1]
         is_whitelisted = item_path[-1] in allowed
-        print 'is_whitelisted'
-        print is_whitelisted
         is_blacklisted = True in [sub_path[0] in not_allowed
                              for sub_path in item_path]
-        print 'is_blacklisted'
-        print is_blacklisted
-        if is_whitelisted:
+        
+        if is_whitelisted and not is_blacklisted:
             json_list.append(item)
+
+        print 'Path: {0}, Item: {1}, Whitelist: {2}, Blacklist: {3}'.format(item_path, item_path[-1], is_whitelisted, is_blacklisted)
         #elif not is_blacklisted:
         # Items that are not blacklisted are regular files
         # Can have a different behaviour in the future, just appending for now
