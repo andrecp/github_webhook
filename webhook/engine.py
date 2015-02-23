@@ -52,6 +52,9 @@ def _whitelist(candidate_list):
     allowed     = DEFAULTS['whitelist'].split(';')
     not_allowed = DEFAULTS['blacklist'].split(';')
     json_list = []
+    print 'ALOWED  : '+ ' '.join(allowed)
+    print 'NOT ALOWED  : '+ ' '.join(not_allowed)
+
     print 'RECEIVED: ' + ' '.join(candidate_list)
 
     # Check if it's whitelisted
@@ -227,11 +230,15 @@ def create_async_lists_by_structure(list_of_requests):
             unique_dict[depth] = [item]
         else:
             unique_dict[depth].append(item)
+
     # Create a list for each depth
     lists = [[]]*len(unique_dict.keys())
+
     # Order the keys to do begin by the lower depths
-    sorted_keys = sorted(unique_dict, key=unique_dict.get)
-    # Populate the lists
-    for i in range(len(sorted_keys)):
-        lists[i] = unique_dict[sorted_keys[i]]
+    # make a list for each depth
+    sorted_keys = []
+    i = 0
+    for key in sorted(unique_dict):
+        lists[i] = unique_dict[key]
+        i = i + 1
     return lists

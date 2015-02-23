@@ -37,7 +37,8 @@ class RootView(object):
         git_branch = DEFAULTS['git_branch']
 
         # Get content from github concurrently
-        request = self.api.get(git_url + ''.join(url), params=git_branch)
+        request = self.api.get(git_url + git_branch + 
+            '/' + url)
 
         # Looking for status in request
         if (request.status_code - 300) > 0:
@@ -46,7 +47,7 @@ class RootView(object):
         requests_status.update({request.url : request.status_code})
 
         # Decode contents in github
-        json_data = engine.get_github_json(request)
+        json_data = request.json()
 
         json_data.update({'path'   : url, 
                          'source' : headers['source'],
