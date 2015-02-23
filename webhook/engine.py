@@ -62,10 +62,10 @@ def _whitelist(candidate_list):
                              for sub_path in item_path]
         if is_whitelisted and not is_blacklisted:
             json_list.append(item)
-        elif not is_blacklisted:
+        #elif not is_blacklisted:
         # Items that are not blacklisted are regular files
         # Can have a different behaviour in the future, just appending for now
-            json_list.append(item)
+            # json_list.append(item)
 
     print 'WHITELIST: ' + ' '.join(json_list)
     return json_list
