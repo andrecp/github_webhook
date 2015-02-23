@@ -52,16 +52,10 @@ def _whitelist(candidate_list):
     allowed     = DEFAULTS['whitelist'].split(';')
     not_allowed = DEFAULTS['blacklist'].split(';')
     json_list = []
-    print 'ALOWED  : ', ' '.join(allowed)
-    print 'NOT ALOWED  : ', ' '.join(not_allowed)
-
-    print 'RECEIVED: ', ' '.join(candidate_list)
 
     # Check if it's whitelisted
     for item in candidate_list:
         item_path = item.split('/')
-        print item_path
-        print item_path[-1]
         is_whitelisted = item_path[-1] in allowed
         is_blacklisted = True in [sub_path[0] in not_allowed
                              for sub_path in item_path]
@@ -75,7 +69,6 @@ def _whitelist(candidate_list):
         # Can have a different behaviour in the future, just appending for now
             # json_list.append(item)
 
-    print 'WHITELIST: ' + ' '.join(json_list)
     return json_list
 
 def get_base_url(commit):
