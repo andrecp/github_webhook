@@ -30,15 +30,15 @@ class RootView(object):
 
     def push_to_api(self, push_url, url, headers):
         """Sending concurrently the URLs received for the API"""
-        requests_status = {}
+
+        requests_status = {'status' : u'Ok'}
 
         # Unpack data
         git_url = DEFAULTS['git_url']
         git_branch = DEFAULTS['git_branch']
 
         # Get content from github concurrently
-        request = self.api.get(git_url + git_branch + 
-            '/' + url)
+        request = self.api.get(git_url + git_branch + '/' + url)
 
         # Looking for status in request
         if (request.status_code - 300) > 0:
@@ -92,6 +92,7 @@ class RootView(object):
         has_changes_to_add = data[0] or data[1]
         if has_changes_to_add:
             new_changes = engine.create_async_lists_by_structure(data[0]+data[1])
+
             # Do the requests concurrently
             for changes in new_changes:
                 # One depth at a time
